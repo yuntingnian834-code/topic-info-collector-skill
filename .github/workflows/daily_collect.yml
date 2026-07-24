@@ -9,7 +9,7 @@ on:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 70
 
     steps:
       - name: 检出代码
@@ -42,7 +42,7 @@ jobs:
 
       - name: 执行信息采集
         run: python scripts/fetch_data.py
-        timeout-minutes: 18
+        timeout-minutes: 60
 
       - name: 推送飞书日报
         run: python scripts/reporter.py
