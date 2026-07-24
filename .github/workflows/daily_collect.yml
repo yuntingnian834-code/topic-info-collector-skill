@@ -34,7 +34,6 @@ jobs:
           INFO_BASE_TOKEN=${{ secrets.INFO_BASE_TOKEN }}
           INFO_TABLE_ID=${{ secrets.INFO_TABLE_ID }}
           FEISHU_WEBHOOK_URL=${{ secrets.FEISHU_WEBHOOK_URL }}
-          TAVILY_API_KEY=${{ secrets.TAVILY_API_KEY }}
           BAIDU_TRANSLATE_APPID=${{ secrets.BAIDU_TRANSLATE_APPID }}
           BAIDU_TRANSLATE_KEY=${{ secrets.BAIDU_TRANSLATE_KEY }}
           DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}
