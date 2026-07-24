@@ -5,11 +5,15 @@ import json
 import hashlib
 import random
 import datetime
+import logging
 import requests
 import feedparser
 import trafilatura
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as ThreadTimeoutError
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from feishu import get_info_points, append_daily_record, get_today_records
@@ -236,17 +240,21 @@ def translate_to_zh(text: str, max_chars: int = 450) -> str:
 # ── DeepSeek ──────────────────────────────────────────────────────────────────────
 
 def _deepseek_chat(prompt: str, max_tokens: int = 900) -> str:
-    resp = requests.post(
-        "https://api.deepseek.com/chat/completions",
-        headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                 "Content-Type": "application/json"},
-        json={"model": "deepseek-chat",
-              "messages": [{"role": "user", "content": prompt}],
-              "max_tokens": max_tokens, "temperature": 0.3},
-        timeout=35,
-    )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    try:
+        resp = requests.post(
+            "https://api.deepseek.com/chat/completions",
+            headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+                     "Content-Type": "application/json"},
+            json={"model": "deepseek-chat",
+                  "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": max_tokens, "temperature": 0.3},
+            timeout=35,
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"].strip()
+    except requests.exceptions.RequestException as e:
+        logging.warning("DeepSeek API 请求失败: %s", str(e)[:80])
+        raise
 
 
 def _rule_title(text: str, fallback: str) -> str:
@@ -412,9 +420,19 @@ FIELD_SITE_NAME     = "来源网站名称"
 
 # ── RSS 摄入引擎 ──────────────────────────────────────────────────────────────────
 
+def _trafilatura_extract_with_timeout(html: str, timeout: int = 12, **kwargs) -> str:
+    """在独立线程中运行 trafilatura.extract，超时则返回空字符串。"""
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(trafilatura.extract, html, **kwargs)
+            return (future.result(timeout=timeout) or "").strip()
+    except (ThreadTimeoutError, Exception):
+        return ""
+
+
 def _fetch_full_text(url: str, timeout: int = 20) -> str:
     """
-    用 trafilatura 三层策略抓取文章完整正文。
+    用 trafilatura 三层策略抓取文章完整正文，所有解析均带超时保护。
     返回正文字符串，失败返回空串。
     """
     try:
@@ -426,25 +444,27 @@ def _fetch_full_text(url: str, timeout: int = 20) -> str:
                 resp.encoding = detected
         html = resp.text
 
-        # 层1: precision
-        text = trafilatura.extract(html, include_comments=False, include_tables=True,
-                                   no_fallback=False, favor_precision=True)
+        # 层1: precision（线程超时保护）
+        text = _trafilatura_extract_with_timeout(
+            html, timeout=12, include_comments=False, include_tables=True,
+            no_fallback=False, favor_precision=True)
         # 层2: recall
-        if not text or len(text.strip()) < 300:
-            text2 = trafilatura.extract(html, include_comments=False, include_tables=True,
-                                        no_fallback=False, favor_recall=True)
-            if text2 and len(text2.strip()) > (len(text.strip()) if text else 0):
+        if not text or len(text) < 300:
+            text2 = _trafilatura_extract_with_timeout(
+                html, timeout=12, include_comments=False, include_tables=True,
+                no_fallback=False, favor_recall=True)
+            if text2 and len(text2) > len(text):
                 text = text2
         # 层3: <p> 标签正则
-        if not text or len(text.strip()) < 300:
+        if not text or len(text) < 300:
             raw_paras = re.findall(r'<p[^>]*>(.*?)</p>', html, re.DOTALL | re.IGNORECASE)
             clean_paras = [re.sub(r'<[^>]+>', '', p).strip()
                            for p in raw_paras if len(re.sub(r'<[^>]+>', '', p).strip()) > 30]
             p_text = "\n".join(clean_paras)
-            if p_text and len(p_text) > (len(text.strip()) if text else 0):
+            if p_text and len(p_text) > len(text):
                 text = p_text
 
-        return (text or "").strip()
+        return text.strip()
     except Exception:
         return ""
 

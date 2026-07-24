@@ -20,12 +20,15 @@ BASE_URL = "https://open.feishu.cn/open-apis"
 
 def get_tenant_token():
     url = f"{BASE_URL}/auth/v3/tenant_access_token/internal"
-    resp = requests.post(url, json={"app_id": APP_ID, "app_secret": APP_SECRET}, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
-    if data.get("code") != 0:
-        raise RuntimeError(f"获取 tenant token 失败: {data}")
-    return data["tenant_access_token"]
+    try:
+        resp = requests.post(url, json={"app_id": APP_ID, "app_secret": APP_SECRET}, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("code") != 0:
+            raise RuntimeError(f"获取 tenant token 失败: {data}")
+        return data["tenant_access_token"]
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"飞书认证请求失败: {e}") from e
 
 
 def _headers(token):
