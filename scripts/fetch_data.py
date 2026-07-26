@@ -250,16 +250,18 @@ def translate_to_zh(text: str, max_chars: int = 450) -> str:
 
 # ── DeepSeek ──────────────────────────────────────────────────────────────────────
 
-def _deepseek_chat(prompt: str, max_tokens: int = 900) -> str:
+def _deepseek_chat(prompt: str, max_tokens: int = 900, is_json: bool = True) -> str:
     try:
+        body = {"model": "deepseek-chat",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens, "temperature": 0.3}
+        if is_json:
+            body["response_format"] = {"type": "json_object"}
         resp = requests.post(
             "https://api.deepseek.com/chat/completions",
             headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}",
                      "Content-Type": "application/json"},
-            json={"model": "deepseek-chat",
-                  "messages": [{"role": "user", "content": prompt}],
-                  "max_tokens": max_tokens, "temperature": 0.3,
-                  "response_format": {"type": "json_object"}},
+            json=body,
             timeout=35,
         )
         resp.raise_for_status()
@@ -293,7 +295,7 @@ def _deepseek_fallback_zh(content: str, level2: str) -> str:
             f"将以下英文内容提炼为150字以内的中文高浓度商业摘要，"
             f"聚焦大宗商品/航运/宏观数据变化，禁止出现任何英文长句：\n\n{content[:2000]}"
         )
-        return _deepseek_chat(prompt, max_tokens=300).strip()
+        return _deepseek_chat(prompt, max_tokens=300, is_json=False).strip()
     except Exception:
         return translate_to_zh(content, 150)
 
@@ -432,9 +434,8 @@ def summarize_v2(content: str, level2: str, research_core: str,
         return title, date_label + summary, event_date
 
     except Exception as e:
-        print(f"    [summarize_v2 失败] {str(e)[:60]}，启动中文兜底翻译…")
-        zh_summary = _deepseek_fallback_zh(content, level2)
-        return _rule_title(content, level2), date_label + zh_summary, None
+        logging.error("[summarize_v2 崩溃] 大模型失去相关性判断能力，阻断入库: %s", str(e)[:80])
+        return "__NOT_RELEVANT__", "", None
 
 
 # ── 字段名 ────────────────────────────────────────────────────────────────────────
