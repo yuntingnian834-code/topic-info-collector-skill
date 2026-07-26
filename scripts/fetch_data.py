@@ -364,13 +364,13 @@ def summarize_v2(content: str, level2: str, research_core: str,
         f'  "commodity_type": "原文涉及的具体大宗商品、宏观指数或政策领域全称（如：WTI原油、LME铜、CBOT大豆、欧盟CBAM、稀土出口管制）；跨品种填综合；is_target_related为false时填null",\n'
         f'  "quantitative_metrics": "请严格根据研究核心「{rc_hint}」的要求提取核心计量经济变量，格式：指标名+具体数值+单位+变动方向；原文无相关数字数据或is_target_related为false时填null",\n'
         f'  "market_or_policy_status": "{status_hint}；is_target_related为false时填null",\n'
-        f'  "analytical_summary": "【必须为中文】高密度商业洞察：①核心变量的变化方向和幅度 ②对下游市场或价格的传导逻辑 ③1个可操作的判断结论。摒弃背景介绍，直接说变化和影响。绝对不超过350字。is_target_related为false时填null"\n'
+        f'  "analytical_summary": "【必须为中文】详实的商业与数据洞察：①保留必要的政策背景或市场前置条件 ②明确列出核心变量（如价格、税率、数据量）的具体数值与变化幅度 ③深入分析对微观企业定价或宏观经济的传导逻辑。请提供细节丰富的深度分析，字数尽量控制在 300 到 400 字左右。is_target_related为false时填null"\n'
         f'}}\n\n'
         f"原文（{len(content_trunc)}字）：\n{content_trunc}"
     )
 
     try:
-        raw = _deepseek_chat(prompt, max_tokens=900)
+        raw = _deepseek_chat(prompt, max_tokens=1200)
         m = re.search(r'\{.*\}', raw, re.DOTALL)
         data = {}
         if m:
