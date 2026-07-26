@@ -30,7 +30,7 @@ TODAY_MS  = int(datetime.datetime(TODAY.year, TODAY.month, TODAY.day).timestamp(
 
 _CUTOFF          = TODAY - datetime.timedelta(days=1)     # 24h 滑动窗口，覆盖国际时差
 _CUTOFF_30       = TODAY - datetime.timedelta(days=30)   # 官方月报宽窗口
-_MONTH_START_STR = TODAY.replace(day=1).strftime("%Y-%m-%d")
+_MAX_RECORDS_PER_RUN = 30   # 单次运行写入上限，防止数据爆炸
 
 # 官方月报类（使用 30 天窗口）
 _OFFICIAL_REPORT_KEYWORDS = ("供需平衡表", "WASDE", "库存消费比", "宏观大宗商品综合价格指数")
@@ -82,12 +82,23 @@ def _date_label(d: datetime.date | None) -> str:
 
 def _is_fresh(d: datetime.date | None, cutoff: datetime.date | None = None) -> bool:
     """
-    默认（cutoff=None）：d >= TODAY-1 放行，兼容国际时差；日期未知则放行。
+    默认（cutoff=None）：d >= TODAY-1 放行，兼容国际时差；日期未知保守丢弃。
     传入 cutoff（官方月报宽窗口）：d >= cutoff 放行。
     """
     if d is None:
-        return True
+        return False
     return d >= (cutoff if cutoff is not None else _CUTOFF)
+
+
+def _is_recent_year(text: str) -> bool:
+    """检查文本是否包含 2026 年相关的日期模式（月+日），而非仅四位年份数字。"""
+    patterns = [
+        r'2026[/\-\.]\d{1,2}',          # 2026-07, 2026/7, 2026.07
+        r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+2026',  # July 2026
+        r'2026\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)',  # 2026 July
+        r'(?:1[月]|2[月]|3[月]|4[月]|5[月]|6[月]|7[月]|8[月]|9[月]|10[月]|11[月]|12[月]).*2026',  # 7月 2026
+    ]
+    return any(re.search(p, text, re.IGNORECASE) for p in patterns)
 
 
 # ── 网站名称映射 ──────────────────────────────────────────────────────────────────
@@ -247,7 +258,8 @@ def _deepseek_chat(prompt: str, max_tokens: int = 900) -> str:
                      "Content-Type": "application/json"},
             json={"model": "deepseek-chat",
                   "messages": [{"role": "user", "content": prompt}],
-                  "max_tokens": max_tokens, "temperature": 0.3},
+                  "max_tokens": max_tokens, "temperature": 0.3,
+                  "response_format": {"type": "json_object"}},
             timeout=35,
         )
         resp.raise_for_status()
@@ -362,12 +374,31 @@ def summarize_v2(content: str, level2: str, research_core: str,
         if m:
             try:
                 data = json.loads(m.group())
+            except json.JSONDecodeError:
+                pass
+
+        # ── JSON 解析失败时，向 DeepSeek 请求一次 JSON 修正 ──
+        if not data:
+            retry_prompt = (
+                f"你之前对原文的提炼输出不是合法 JSON，请严格按照之前给出的 JSON Schema "
+                f"重新输出一次，只输出纯 JSON，不要添加任何额外文字或 Markdown 标记。\n"
+                f"原文摘要：{content_trunc[:300]}"
+            )
+            try:
+                raw2 = _deepseek_chat(retry_prompt, max_tokens=600)
+                m2 = re.search(r'\{.*\}', raw2, re.DOTALL)
+                if m2:
+                    try:
+                        data = json.loads(m2.group())
+                    except json.JSONDecodeError:
+                        pass
             except Exception:
                 pass
 
-        # ── Relevance Gateway：is_target_related=false 直接返回哨兵值，并打印拦截原因 ──
-        if str(data.get("is_target_related", "true")).lower() == "false":
-            reason = (data.get("rejection_reason") or "未说明").strip()
+        # ── Relevance Gateway：默认视为不相关，仅当 LLM 明确标记 true 才放行 ──
+        is_relevant = str(data.get("is_target_related", "")).lower()
+        if is_relevant != "true":
+            reason = (data.get("rejection_reason") or "JSON解析失败或LLM判定不相关").strip()
             print(f"    [相关性拦截] 原因：{reason[:80]}")
             return "__NOT_RELEVANT__", "", None
 
@@ -550,8 +581,8 @@ def _parse_rss_feed(feed_url: str, cutoff: datetime.date) -> list[dict]:
                 print(f"    [拦截旧数据] 节点时间 {pub_date} 早于阈值，阻断入库")
                 continue
         else:
-            # 无时间戳：仅当 URL 或标题含当前年份时才放行，否则保守丢弃
-            if not (_has_current_year(link) or _has_current_year(title)):
+            # 无时间戳：仅当 URL 或标题含当年日期模式时才放行，否则保守丢弃
+            if not (_is_recent_year(link) or _is_recent_year(title)):
                 print(f"    [无时间戳保守拦截] 无法确认为当年内容，阻断: {title[:60]}")
                 continue
 
@@ -716,9 +747,14 @@ def fetch_and_write(filter_level2: set | None = None):
 
     for point in info_points:
         level2 = point["level2"] or point["level1"] or "未知"
+        if total_written >= _MAX_RECORDS_PER_RUN:
+            print(f"  [上限截断] 已达到单次运行写入上限 {_MAX_RECORDS_PER_RUN} 条，停止写入")
+            break
         try:
             records = _collect_one(point)
             for fields in records:
+                if total_written >= _MAX_RECORDS_PER_RUN:
+                    break
                 url     = str(fields.get(FIELD_SOURCE_URL, "")).strip()
                 summary = str(fields.get(FIELD_SUMMARY, "")).strip()
                 fp      = summary[:50]
