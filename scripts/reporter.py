@@ -186,7 +186,7 @@ def build_report(records: list[dict], date_str: str) -> dict:
 
 def send_daily_report(date_str: str = None):
     if date_str is None:
-        date_str = datetime.date.today().strftime("%Y-%m-%d")
+        date_str = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d")
 
     print(f"读取 {date_str} 的快报记录…")
     records = get_today_records(date_str)

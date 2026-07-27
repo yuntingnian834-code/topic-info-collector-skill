@@ -24,7 +24,7 @@ BAIDU_APPID      = os.getenv("BAIDU_TRANSLATE_APPID")
 BAIDU_KEY        = os.getenv("BAIDU_TRANSLATE_KEY")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
-TODAY     = datetime.date.today()
+TODAY     = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).date()
 TODAY_STR = TODAY.strftime("%Y-%m-%d")
 TODAY_MS  = int(datetime.datetime(TODAY.year, TODAY.month, TODAY.day).timestamp() * 1000)
 
