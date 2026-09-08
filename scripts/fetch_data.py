@@ -30,7 +30,6 @@ TODAY_MS  = int(datetime.datetime(TODAY.year, TODAY.month, TODAY.day).timestamp(
 
 _CUTOFF          = TODAY - datetime.timedelta(days=1)     # 24h 滑动窗口，覆盖国际时差
 _CUTOFF_30       = TODAY - datetime.timedelta(days=30)   # 官方月报宽窗口
-_MAX_RECORDS_PER_RUN = 30   # 单次运行写入上限，防止数据爆炸
 
 # 官方月报类（使用 30 天窗口）
 _OFFICIAL_REPORT_KEYWORDS = ("供需平衡表", "WASDE", "库存消费比", "宏观大宗商品综合价格指数")
@@ -748,14 +747,9 @@ def fetch_and_write(filter_level2: set | None = None):
 
     for point in info_points:
         level2 = point["level2"] or point["level1"] or "未知"
-        if total_written >= _MAX_RECORDS_PER_RUN:
-            print(f"  [上限截断] 已达到单次运行写入上限 {_MAX_RECORDS_PER_RUN} 条，停止写入")
-            break
         try:
             records = _collect_one(point)
             for fields in records:
-                if total_written >= _MAX_RECORDS_PER_RUN:
-                    break
                 url     = str(fields.get(FIELD_SOURCE_URL, "")).strip()
                 summary = str(fields.get(FIELD_SUMMARY, "")).strip()
                 fp      = summary[:50]
