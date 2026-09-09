@@ -1,0 +1,44 @@
+name: 网站数据新鲜度监控
+
+on:
+  schedule:
+    # 每天北京时间08:00和12:00检查；第一次负责采集完成后的缓存预热。
+    - cron: '0 0 * * *'
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SHU_SIGNAL_SITE_URL: ${{ vars.SHU_SIGNAL_SITE_URL || 'https://shu-signal-intelligence.yuntingnian834.chatgpt.site' }}
+      MONITORING_FEISHU_WEBHOOK_URL: ${{ secrets.MONITORING_FEISHU_WEBHOOK_URL }}
+      FRESHNESS_REPORT_DIR: data/monitoring/freshness
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 刷新并检查网站数据
+        run: python scripts/monitoring/phase5/freshness_monitor.py --refresh --notification-mode alerts-only
+
+      - name: 保存新鲜度报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-freshness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: data/monitoring/freshness/
+          if-no-files-found: ignore
+          retention-days: 90

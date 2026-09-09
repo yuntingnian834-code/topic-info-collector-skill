@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 事件发展时间线草稿页">
+  <title>事件时间线｜SHU SIGNAL</title>
+  <link rel="stylesheet" href="shu-signal-pages.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="shu-signal-draft.html">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="shu-signal-draft.html">首页</a>
+        <a href="intelligence.html">全部情报</a>
+        <a href="daily-brief.html">每日简报</a>
+        <a href="event-timeline.html?topic=copper-tightness" aria-current="page">事件时间线</a>
+        <a href="monitoring-dashboard.html">数据监控</a>
+      </div>
+      <a class="nav-cta" href="intelligence.html">浏览今日情报</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container crumbs"><a href="shu-signal-draft.html">首页</a><span><a href="intelligence.html">全部情报</a></span><span>事件时间线</span></div>
+    <section class="container timeline-head">
+      <div class="topic-card">
+        <div>
+          <p class="eyebrow" style="color:#83d8ba">Event Timeline</p>
+          <h1 id="topic-title"></h1>
+          <p class="lead" id="topic-summary"></p>
+          <div class="detail-meta" style="margin:22px 0 0">
+            <span class="badge green" id="topic-trend"></span>
+            <span class="badge" id="topic-subtopic"></span>
+          </div>
+        </div>
+        <div class="topic-score">
+          <strong id="confidence"></strong>
+          <span>事件关联置信度</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="container timeline-layout">
+      <section>
+        <div class="summary-bar">
+          <span class="summary-label">时间线结论</span>
+          <p>同一条新闻只回答“今天发生了什么”，时间线则回答“这个信号何时出现、如何被后续数据验证、目前发展到哪一步”。</p>
+          <small>按事件日期倒序</small>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <aside class="side-stack" style="grid-template-columns:1fr">
+        <section class="side-panel">
+          <h3>归并规则</h3>
+          <div class="kv"><span>主题键</span><strong>二级信息点</strong></div>
+          <div class="kv"><span>实体</span><strong>商品 / 地区 / 机构</strong></div>
+          <div class="kv"><span>指标</span><strong>同类量化变量</strong></div>
+          <div class="kv"><span>时间</span><strong>事件日期优先</strong></div>
+        </section>
+        <section class="side-panel">
+          <h3>置信度如何理解</h3>
+          <p style="margin:0;color:var(--muted);font-size:13px">标题相似并不足以串成时间线。草稿将“二级信息点一致、核心实体重合、关键指标可连续比较”作为主要条件，并保留人工复核入口。</p>
+        </section>
+        <section class="side-panel">
+          <a class="button primary full" id="latest-detail-link" href="intelligence-detail.html?id=lme-copper-20260806">返回最新情报详情</a>
+          <a class="button full" href="intelligence.html">查看今日全部情报</a>
+        </section>
+      </aside>
+    </div>
+
+    <section class="container" style="padding-bottom:80px">
+      <div class="annotation">飞书表格迭代建议：为了可靠生成时间线，建议新增“事件日期”“事件主题ID”“核心实体”“方向判断”“信号强度”五个字段。现有“采集时间”只能说明系统何时抓到信息，不能准确代表事件何时发生。</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <div><strong>SHU SIGNAL</strong><p>把分散的每日记录连接成可追踪、可验证、可持续更新的事件链。</p></div>
+      <div>事件时间线草稿<br>Prototype · 2026</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script>
+    const topicKey = new URLSearchParams(location.search).get("topic") || "copper-tightness";
+    const timelines = window.SHU_SIGNAL_DATA.timeline;
+    const resolvedTopicKey = timelines[topicKey] ? topicKey : "copper-tightness";
+    const topic = timelines[resolvedTopicKey];
+    const topicRecord = window.SHU_SIGNAL_DATA.records.find((record) => record.eventGroup === resolvedTopicKey);
+    window.ShuAnalytics?.setContext({ topicId: resolvedTopicKey });
+    window.ShuAnalytics?.track("timeline_view", { topicId: resolvedTopicKey });
+    const set = (id, value) => document.getElementById(id).textContent = value;
+    set("topic-title", topic.title);
+    set("topic-summary", topic.summary);
+    set("topic-trend", topic.trend);
+    set("topic-subtopic", topic.subtopic);
+    set("confidence", `${topic.confidence}%`);
+    document.title = `${topic.title}｜SHU SIGNAL`;
+    if (topicRecord) {
+      const latestDetailLink = document.getElementById("latest-detail-link");
+      latestDetailLink.href = `intelligence-detail.html?id=${encodeURIComponent(topicRecord.id)}`;
+      latestDetailLink.addEventListener("click", () => {
+        window.ShuAnalytics?.track("intelligence_clicked", {
+          intelligenceId: topicRecord.id,
+          topicId: resolvedTopicKey,
+          category: topicRecord.categoryKey,
+          position: 1,
+          properties: { surface: "timeline" },
+        }, { transport: "beacon" });
+      });
+    }
+
+    document.getElementById("timeline").innerHTML = topic.events.map((event) => `
+      <article class="timeline-item ${event.latest ? "latest" : ""}">
+        <time class="timeline-date">${event.date.slice(5).replace("-", ".")}</time>
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <div class="timeline-card">
+          <span class="badge ${event.signal === "利多" || event.signal === "改善" ? "green" : "amber"}">${event.latest ? "最新进展 · " : ""}${event.signal}</span>
+          <h2>${event.title}</h2>
+          <p>${event.detail}</p>
+          <footer><strong>${event.metric}</strong><span>来源：${event.source}</span></footer>
+        </div>
+      </article>`).join("");
+  </script>
+</body>
+</html>

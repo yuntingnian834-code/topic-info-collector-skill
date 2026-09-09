@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 用户价值、转化漏斗、异常告警与Bad Case监控看板">
+  <title>数据监控｜SHU SIGNAL</title>
+  <link rel="stylesheet" href="shu-signal-pages.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="shu-signal-draft.html">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="shu-signal-draft.html">首页</a>
+        <a href="intelligence.html">全部情报</a>
+        <a href="daily-brief.html">每日简报</a>
+        <a href="event-timeline.html?topic=copper-tightness">事件时间线</a>
+        <a href="monitoring-dashboard.html" aria-current="page">数据监控</a>
+      </div>
+      <a class="nav-cta" href="intelligence.html">查看情报</a>
+    </nav>
+  </header>
+
+  <main class="monitoring-shell">
+    <section class="container monitoring-head">
+      <div>
+        <p class="eyebrow">Value Monitoring</p>
+        <h1>用户价值监控</h1>
+        <p class="lead">用访问路径、转化行为和反馈结果判断情报是否真正产生价值，并把异常自动回流为待处理案例。</p>
+      </div>
+      <div class="monitoring-controls">
+        <label for="window-days">观察窗口</label>
+        <select id="window-days">
+          <option value="7">最近7天</option>
+          <option value="30">最近30天</option>
+        </select>
+        <button class="button" id="refresh-dashboard" type="button">刷新数据</button>
+        <span id="dashboard-updated" aria-live="polite">正在加载…</span>
+      </div>
+    </section>
+
+    <section class="container dashboard-alerts" id="dashboard-alerts" aria-labelledby="alerts-title">
+      <div class="dashboard-section-head">
+        <div><p class="eyebrow">Alerts</p><h2 id="alerts-title">异常提醒</h2></div>
+        <span class="status-pill" id="alert-count">读取中</span>
+      </div>
+      <div class="alert-list" id="alert-list"></div>
+    </section>
+
+    <section class="container" aria-labelledby="metrics-title">
+      <div class="dashboard-section-head">
+        <div><p class="eyebrow">North Star</p><h2 id="metrics-title">核心价值指标</h2></div>
+        <p>北极星指标：每周至少获得一次“有用”反馈的独立情报数</p>
+      </div>
+      <div class="metric-board">
+        <article class="metric-tile primary"><span>每周有效情报</span><strong id="metric-weekly-useful">—</strong><small>条独立情报</small></article>
+        <article class="metric-tile"><span>情报有用率</span><strong id="metric-useful-rate">—</strong><small id="metric-feedback-count">—条反馈</small></article>
+        <article class="metric-tile"><span>列表→详情</span><strong id="metric-library-detail">—</strong><small>会话转化率</small></article>
+        <article class="metric-tile"><span>详情→原文</span><strong id="metric-detail-source">—</strong><small>会话转化率</small></article>
+        <article class="metric-tile"><span>搜索使用率</span><strong id="metric-search-usage">—</strong><small>情报库会话</small></article>
+        <article class="metric-tile"><span>搜索零结果率</span><strong id="metric-zero-rate">—</strong><small id="metric-search-count">—次搜索</small></article>
+        <article class="metric-tile"><span>网页数据日期</span><strong id="metric-snapshot-date">—</strong><small id="metric-snapshot-count">—条情报</small></article>
+        <article class="metric-tile"><span>交付新鲜度</span><strong id="metric-freshness">—</strong><small id="metric-snapshot-source">正在读取</small></article>
+      </div>
+    </section>
+
+    <section class="container dashboard-grid" aria-label="转化与趋势">
+      <article class="dashboard-panel funnel-panel">
+        <div class="dashboard-section-head compact"><div><p class="eyebrow">Journey</p><h2>访问转化链路</h2></div></div>
+        <div class="journey" id="journey"></div>
+      </article>
+      <article class="dashboard-panel trend-panel">
+        <div class="dashboard-section-head compact"><div><p class="eyebrow">Trend</p><h2>每日行为趋势</h2></div></div>
+        <div class="trend-legend"><span class="views">访问</span><span class="details">详情</span><span class="sources">原文</span></div>
+        <div class="trend-chart" id="trend-chart"></div>
+      </article>
+    </section>
+
+    <section class="container dashboard-grid" aria-label="渠道与反馈">
+      <article class="dashboard-panel">
+        <div class="dashboard-section-head compact"><div><p class="eyebrow">Attribution</p><h2>渠道表现</h2></div></div>
+        <div class="table-scroll">
+          <table class="dashboard-table">
+            <thead><tr><th>渠道</th><th>访问会话</th><th>反馈用户</th><th>反馈转化</th></tr></thead>
+            <tbody id="channel-table"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="dashboard-panel">
+        <div class="dashboard-section-head compact"><div><p class="eyebrow">Feedback</p><h2>无用原因分布</h2></div></div>
+        <div class="reason-list" id="reason-list"></div>
+      </article>
+    </section>
+
+    <section class="container dashboard-panel bad-case-panel" aria-labelledby="bad-case-title">
+      <div class="dashboard-section-head">
+        <div><p class="eyebrow">Closed Loop</p><h2 id="bad-case-title">Bad Case维护台账</h2></div>
+        <div class="admin-control">
+          <input id="admin-key" type="password" autocomplete="off" placeholder="输入维护密钥" aria-label="维护密钥">
+          <button class="button" id="enable-admin" type="button">启用维护</button>
+        </div>
+      </div>
+      <p class="admin-status" id="admin-status">公开视图只展示聚合问题；维护密钥不会保存到浏览器。</p>
+      <div class="bad-case-list" id="bad-case-list"></div>
+    </section>
+
+    <section class="container dashboard-error" id="dashboard-error" hidden role="alert">
+      监控数据暂时无法读取，请稍后刷新。情报浏览和反馈功能不受影响。
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <div><strong>SHU SIGNAL</strong><p>从行为数据发现问题，以Bad Case推动筛选、摘要和信息覆盖持续改进。</p></div>
+      <div>数据监控面板<br>Phase 5 · 2026</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script src="monitoring-dashboard.js"></script>
+</body>
+</html>

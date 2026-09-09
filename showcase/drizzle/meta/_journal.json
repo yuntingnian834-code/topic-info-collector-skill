@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788759276129,
+      "tag": "0000_futuristic_mentallo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788760825043,
+      "tag": "0001_previous_miracleman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788766831579,
+      "tag": "0002_steep_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788777810803,
+      "tag": "0003_simple_yellowjacket",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788852145558,
+      "tag": "0004_common_the_renegades",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+name: 用户价值监控与周报
+
+on:
+  schedule:
+    # 每天北京时间09:15检查告警；周一同时发送周报。
+    - cron: '15 1 * * *'
+    # 每月1日北京时间09:30发送30天治理复盘。
+    - cron: '30 1 1 * *'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 观察窗口
+        type: choice
+        options: ['7', '30']
+        default: '7'
+      notification_mode:
+        description: 通知方式
+        type: choice
+        options: ['auto', 'always', 'alerts-only', 'never']
+        default: 'always'
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SHU_SIGNAL_SITE_URL: ${{ vars.SHU_SIGNAL_SITE_URL || 'https://shu-signal-intelligence.yuntingnian834.chatgpt.site' }}
+      MONITORING_FEISHU_WEBHOOK_URL: ${{ secrets.MONITORING_FEISHU_WEBHOOK_URL }}
+      USER_VALUE_REPORT_DIR: data/monitoring/user_value
+      REPORT_DAYS: ${{ github.event.schedule == '30 1 1 * *' && '30' || inputs.days || '7' }}
+      NOTIFICATION_MODE: ${{ github.event.schedule == '30 1 1 * *' && 'always' || inputs.notification_mode || 'auto' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 生成用户价值报告并按规则通知
+        run: python scripts/monitoring/phase4/user_value_monitor.py --days "$REPORT_DAYS" --notification-mode "$NOTIFICATION_MODE"
+
+      - name: 保存用户价值报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-value-monitoring-${{ github.run_id }}-${{ github.run_attempt }}
+          path: data/monitoring/user_value/
+          if-no-files-found: ignore
+          retention-days: 90

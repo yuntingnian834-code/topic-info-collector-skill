@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 今日全部高纯度情报草稿页">
+  <title>全部情报｜SHU SIGNAL</title>
+  <link rel="stylesheet" href="shu-signal-pages.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="shu-signal-draft.html">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="shu-signal-draft.html">首页</a>
+        <a href="intelligence.html" aria-current="page">全部情报</a>
+        <a href="daily-brief.html">每日简报</a>
+        <a href="event-timeline.html?topic=copper-tightness">事件时间线</a>
+        <a href="monitoring-dashboard.html">数据监控</a>
+      </div>
+      <a class="nav-cta" href="daily-brief.html">今日简报</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container crumbs"><a href="shu-signal-draft.html">首页</a><span>全部情报</span></div>
+    <section class="container page-head">
+      <div class="page-head-grid">
+        <div>
+          <p class="eyebrow">Intelligence Library</p>
+          <h1>今日全部情报</h1>
+          <p class="lead">展示当天采集并通过五重提纯的全部记录。点击标题进入详情页，查看结构化摘要、指标证据和事件发展时间线。</p>
+        </div>
+        <div class="status-block">
+          <span class="live" id="library-freshness">正在同步当日数据</span>
+          <strong id="display-date">正在读取日期</strong>
+          <span>仅显示 00:00—24:00 采集记录</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" aria-labelledby="library-title">
+      <h2 id="library-title" hidden>情报列表</h2>
+      <div class="stat-row">
+        <div class="stat"><strong id="record-count">6</strong><span>今日有效情报</span></div>
+        <div class="stat"><strong id="source-count">—</strong><span>信息来源</span></div>
+        <div class="stat"><strong id="timeline-count">—</strong><span>关联时间线</span></div>
+        <div class="stat"><strong id="category-count">—</strong><span>覆盖一级分类</span></div>
+      </div>
+
+      <div class="summary-bar">
+        <span class="summary-label">AI 今日看点</span>
+        <p id="daily-summary"></p>
+        <small>基于当日记录自动生成</small>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" aria-label="按一级分类筛选">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">全部</button>
+          <button class="chip" type="button" data-filter="market" aria-pressed="false">市场基本面</button>
+          <button class="chip" type="button" data-filter="shipping" aria-pressed="false">航运物流</button>
+          <button class="chip" type="button" data-filter="port" aria-pressed="false">港口与航道</button>
+          <button class="chip" type="button" data-filter="policy" aria-pressed="false">宏观政策</button>
+        </div>
+        <input class="search" id="search" type="search" placeholder="搜索标题、指标或研究课题" aria-label="搜索情报">
+      </div>
+
+      <div class="intel-list" id="intel-list"></div>
+      <div class="empty" id="empty" hidden>没有符合条件的当日情报。</div>
+
+      <div class="annotation">草稿说明：本页只读取所选自然日内的记录。正式接入飞书时，查询条件应固定为“采集时间 ≥ 当日00:00 且 &lt; 次日00:00”，而不是把历史记录全部加载后再在前端隐藏。</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <div><strong>SHU SIGNAL</strong><p>树信 · 大宗商品与宏观智能情报。从全球资讯中提纯真正影响市场的信号。</p></div>
+      <div>上海大学项目展示<br>Prototype · 2026</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script>
+    const { records, dailySummary, sampleDate } = window.SHU_SIGNAL_DATA;
+    const list = document.getElementById("intel-list");
+    const search = document.getElementById("search");
+    const empty = document.getElementById("empty");
+    const chips = [...document.querySelectorAll("[data-filter]")];
+    let activeCategory = "all";
+    let lastTrackedSearch = "";
+
+    document.getElementById("daily-summary").textContent = dailySummary;
+    const freshness = window.SHU_SIGNAL_DATA.meta?.freshness || "unavailable";
+    document.getElementById("display-date").textContent = sampleDate ? sampleDate.replaceAll("-", ".") : "日期暂不可用";
+    document.getElementById("library-freshness").textContent = freshness === "stale" ? "最近成功快照" : freshness === "fresh" ? "当日数据已同步" : "实时数据暂不可用";
+    document.getElementById("source-count").textContent = new Set(records.map((record) => record.source)).size;
+    document.getElementById("timeline-count").textContent = Object.keys(window.SHU_SIGNAL_DATA.timeline || {}).length;
+    document.getElementById("category-count").textContent = `${new Set(records.map((record) => record.category)).size}/4`;
+
+    function badgeClass(record) {
+      if (record.judgmentClass === "positive") return "badge green";
+      if (record.judgmentClass === "negative") return "badge red";
+      return "badge amber";
+    }
+
+    function render() {
+      const keyword = search.value.trim().toLowerCase();
+      const filtered = records.filter((record) => {
+        const matchesCategory = activeCategory === "all" || record.categoryKey === activeCategory;
+        const haystack = [record.title, record.metric, record.subtopic, record.summary].join(" ").toLowerCase();
+        return matchesCategory && (!keyword || haystack.includes(keyword));
+      });
+
+      list.innerHTML = filtered.map((record, index) => `
+        <a class="intel-row" data-intelligence-id="${record.id}" data-category-key="${record.categoryKey}" data-position="${index + 1}" href="intelligence-detail.html?id=${encodeURIComponent(record.id)}" aria-label="查看${record.title}详情">
+          <time class="intel-time">${record.collectedAt.slice(11)}</time>
+          <span class="badge">${record.category}</span>
+          <span class="intel-title"><strong>${record.title}</strong><span>${record.subtopic} · ${record.summary.replace(/【[^】]+】/g, "")}</span></span>
+          <span class="intel-metric">${record.metric}</span>
+          <span class="intel-source ${record.judgmentClass}">${record.judgment}</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>`).join("");
+
+      document.getElementById("record-count").textContent = filtered.length;
+      empty.hidden = filtered.length !== 0;
+      return filtered.length;
+    }
+
+    chips.forEach((chip) => chip.addEventListener("click", () => {
+      const nextCategory = chip.dataset.filter;
+      const changed = nextCategory !== activeCategory;
+      activeCategory = nextCategory;
+      chips.forEach((item) => item.setAttribute("aria-pressed", String(item === chip)));
+      const resultCount = render();
+      if (changed) {
+        window.ShuAnalytics?.track("category_filter_applied", {
+          category: activeCategory,
+          properties: { surface: "library", result_count: resultCount },
+        });
+      }
+    }));
+    search.addEventListener("input", render);
+    const trackSearch = window.ShuAnalytics?.debounce(() => {
+      const keyword = search.value.trim().toLowerCase().slice(0, 80);
+      if (!keyword || keyword === lastTrackedSearch) {
+        if (!keyword) lastTrackedSearch = "";
+        return;
+      }
+      lastTrackedSearch = keyword;
+      const resultCount = render();
+      const fields = {
+        category: activeCategory,
+        properties: { keyword, result_count: resultCount },
+      };
+      window.ShuAnalytics.track("search_submitted", fields);
+      if (resultCount === 0) window.ShuAnalytics.track("search_zero_result", fields);
+    }, 500);
+    if (trackSearch) search.addEventListener("input", trackSearch);
+
+    list.addEventListener("click", (event) => {
+      const link = event.target.closest(".intel-row");
+      if (!link) return;
+      window.ShuAnalytics?.track("intelligence_clicked", {
+        intelligenceId: link.dataset.intelligenceId,
+        category: link.dataset.categoryKey,
+        position: Number(link.dataset.position),
+        properties: {
+          surface: "library",
+          has_search: Boolean(search.value.trim()),
+        },
+      }, { transport: "beacon" });
+    });
+    render();
+  </script>
+</body>
+</html>

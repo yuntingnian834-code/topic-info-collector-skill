@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 当日飞书简报网页草稿">
+  <title>每日简报｜SHU SIGNAL</title>
+  <link rel="stylesheet" href="shu-signal-pages.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="shu-signal-draft.html">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="shu-signal-draft.html">首页</a>
+        <a href="intelligence.html">全部情报</a>
+        <a href="daily-brief.html" aria-current="page">每日简报</a>
+        <a href="event-timeline.html?topic=copper-tightness">事件时间线</a>
+        <a href="monitoring-dashboard.html">数据监控</a>
+      </div>
+      <a class="nav-cta" href="intelligence.html">查看完整面板</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container crumbs"><a href="shu-signal-draft.html">首页</a><span>每日简报</span></div>
+    <div class="container brief-shell">
+      <section class="brief-cover">
+        <div class="brief-cover-top">
+          <div>
+            <p class="eyebrow" style="color:#83d8ba">Daily Intelligence Brief</p>
+            <h1>大宗商品与宏观<br>每日情报简报</h1>
+            <p class="lead">只呈现今天采集、今天通过提纯、今天写入情报库的内容。</p>
+          </div>
+          <div class="date-lock"><span class="live" id="brief-freshness" style="color:#83d8ba">正在同步</span><br><strong id="brief-date">正在读取日期</strong><br><span id="brief-cutoff">正在读取最新时间</span></div>
+        </div>
+      </section>
+
+      <section class="brief-body">
+        <div class="stat-row">
+          <div class="stat"><strong id="brief-count">6</strong><span>高纯度洞察</span></div>
+          <div class="stat"><strong id="high-count">1</strong><span>高强度信号</span></div>
+          <div class="stat"><strong id="brief-category-count">—</strong><span>一级分类</span></div>
+          <div class="stat"><strong>0</strong><span>重复记录</span></div>
+        </div>
+
+        <div class="brief-summary"><span class="badge green" style="margin-bottom:10px">AI 今日核心看点</span><br><span id="brief-summary"></span></div>
+        <div id="brief-groups"></div>
+
+        <div class="brief-footer-note" id="brief-boundary"></div>
+      </section>
+      <div class="annotation">飞书迭代方式：为“每日简报”新建一个视图，过滤条件使用“采集时间是今天”；简报卡片的按钮应进入这个当日视图，而不是进入没有日期过滤的总表。总表继续作为数据库保留全部历史记录。</div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <div><strong>SHU SIGNAL</strong><p>简报负责快速阅读，完整面板负责检索，详情页负责解释，时间线负责追踪。</p></div>
+      <div>每日简报草稿<br>Prototype · 2026</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script>
+    const { records, dailySummary, sampleDate } = window.SHU_SIGNAL_DATA;
+    const orderedCategories = ["市场基本面", "航运物流", "港口与航道", "宏观政策"];
+    const icons = {"市场基本面":"●", "航运物流":"◆", "港口与航道":"▲", "宏观政策":"■"};
+    const date = new Date(`${sampleDate}T12:00:00+08:00`);
+    const freshness = window.SHU_SIGNAL_DATA.meta?.freshness || "unavailable";
+    document.getElementById("brief-freshness").textContent = freshness === "stale" ? "最近成功快照" : freshness === "fresh" ? "当日视图" : "实时数据暂不可用";
+    document.getElementById("brief-date").textContent = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+    document.getElementById("brief-count").textContent = records.length;
+    document.getElementById("high-count").textContent = records.filter((record) => record.strength === "高").length;
+    document.getElementById("brief-category-count").textContent = new Set(records.map((record) => record.category)).size;
+    document.getElementById("brief-cutoff").textContent = `截止 ${records[0]?.collectedAt.slice(11) || "—"}`;
+    document.getElementById("brief-summary").textContent = dailySummary;
+    const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+    const nextDateString = `${nextDate.getFullYear()}-${String(nextDate.getMonth()+1).padStart(2,"0")}-${String(nextDate.getDate()).padStart(2,"0")}`;
+    document.getElementById("brief-boundary").textContent = `本页查询边界：${sampleDate} 00:00:00 ≤ 采集时间 < ${nextDateString} 00:00:00（Asia/Shanghai）`;
+
+    document.getElementById("brief-groups").innerHTML = orderedCategories.map((category) => {
+      const group = records.filter((record) => record.category === category);
+      if (!group.length) return "";
+      return `<section class="brief-group">
+        <div class="brief-group-head"><h2>${icons[category]} ${category}</h2><span>${group.length}条 · 按采集时间倒序</span></div>
+        ${group.map((record) => `<article class="brief-item">
+          <time>${record.collectedAt.slice(11)}</time>
+          <div><h3>${record.title}</h3><p>${record.summary.replace(/【[^】]+】/g, "")}</p></div>
+          <a data-intelligence-id="${record.id}" data-category-key="${record.categoryKey}" data-position="${records.findIndex((item) => item.id === record.id) + 1}" href="intelligence-detail.html?id=${encodeURIComponent(record.id)}">查看详情 →</a>
+        </article>`).join("")}
+      </section>`;
+    }).join("");
+
+    document.getElementById("brief-groups").addEventListener("click", (event) => {
+      const link = event.target.closest("[data-intelligence-id]");
+      if (!link) return;
+      window.ShuAnalytics?.track("intelligence_clicked", {
+        intelligenceId: link.dataset.intelligenceId,
+        category: link.dataset.categoryKey,
+        position: Number(link.dataset.position),
+        properties: { surface: "daily_brief" },
+      }, { transport: "beacon" });
+    });
+  </script>
+</body>
+</html>

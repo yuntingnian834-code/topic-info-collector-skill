@@ -1,17 +1,11 @@
-# SKILL: commodity_intel_collector
+---
+name: commodity-intel-collector
+description: 大宗商品与宏观经济高纯度数据采集、清洗、飞书推送和网页快照 Skill。用于执行今日增量采集，检查飞书落库与指纹去重，推送 AI 每日简报，或查看信息源健康、提纯漏斗、模型与 Prompt 质量。
+---
 
-```yaml
-name: commodity_intel_collector
-version: "1.0"
-description: >
-  大宗商品与宏观经济高纯度数据采集与推送 Skill。
-  当需要抓取最新大宗商品供需、宏观政策、航运运价数据，
-  或向飞书机器人推送每日快报卡片时触发。
-triggers:
-  - 执行今日大宗商品与宏观增量数据搜集与清洗
-  - 检查飞书多维表格当日落库数据与指纹去重状态
-  - 向飞书 Webhook 推送带 AI 核心看点的互动简报卡片
-```
+# 大宗商品情报采集 Skill
+
+当前版本：1.5
 
 ---
 
@@ -19,11 +13,23 @@ triggers:
 
 | 场景 | 触发描述 |
 |---|---|
-| 定时全量采集 | 每日 05:00，`scheduler.py` 自动触发 `fetch_and_write()` |
-| 手动增量采集 | 直接运行 `python scripts/fetch_data.py` |
-| 测试模式 | `python scripts/fetch_data.py --test5`（仅处理前 5 个信息点） |
-| 简报推送 | 采集完成后自动或手动运行 `python scripts/reporter.py` |
-| 数据源更新 | 运行 `python scripts/update_sources.py` 批量刷新 RSS 配置 |
+| 定时全量采集 | 每日 05:00，`scripts/runtime/scheduler.py` 自动触发完整链路 |
+| 手动增量采集 | 直接运行 `python scripts/runtime/fetch_data.py` |
+| 完整发布链路 | 运行 `python scripts/runtime/daily_pipeline.py`，依次完成采集、推送和网页快照 |
+| 测试模式 | `python scripts/runtime/fetch_data.py --test5`（仅处理前 5 个信息点） |
+| 简报推送 | 采集完成后自动或手动运行 `python scripts/runtime/reporter.py` |
+| 运行监控 | 运行 `python scripts/monitoring/phase1/runtime_monitor.py` 查看最近一次提纯漏斗 |
+| 数据源更新 | 运行 `python scripts/runtime/update_sources.py` 批量刷新 RSS 配置 |
+
+### 文档路由
+
+- 修改飞书字段或业务落库契约前，读取 `references/runtime/feishu_table_schemas.md`。
+- 排查任务、来源、漏斗或交付异常时，读取 `references/monitoring/phase1/README.md`。
+- 分析模型质量、Prompt版本、Token、成本或执行回归评测时，读取 `references/monitoring/phase2/README.md`。
+- 分析网页反馈和用户价值指标时，读取 `references/monitoring/phase3/README.md`。
+- 处理异常告警、Bad Case、人工抽检或周期报告时，读取 `references/monitoring/phase4/README.md`。
+- 排查网页日期、数据缓存、发布一致性或新鲜度告警时，读取 `references/monitoring/phase5/README.md`。
+- 调整监控总体范围与后续阶段时，读取 `references/monitoring/monitoring_architecture_and_roadmap.md`。
 
 ---
 
@@ -61,7 +67,7 @@ triggers:
 
 ## 3. 执行入口与运行约束 (Execution Entrypoints & Constraints)
 
-### 3.1 主 ETL 管道 `fetch_data.py`
+### 3.1 主 ETL 管道 `scripts/runtime/fetch_data.py`
 
 ```
 fetch_and_write()
@@ -92,7 +98,7 @@ fetch_and_write()
 | `_CUTOFF_30` | `TODAY - timedelta(days=30)` | 官方月报宽窗口例外 |
 | `_OFFICIAL_REPORT_KEYWORDS` | `("供需平衡表","WASDE","库存消费比","宏观大宗商品综合价格指数")` | 命中则使用 30 天宽窗口 |
 
-### 3.2 简报引擎 `reporter.py`
+### 3.2 简报引擎 `scripts/runtime/reporter.py`
 
 ```
 send_daily_report(date_str)
@@ -124,6 +130,28 @@ send_daily_report(date_str)
   拉取指纹 → N 条已落库（URL 指纹集 + 摘要指纹集非空）
   采集 → 所有记录命中 [URL重复阻断] 或 [内容高度雷同阻断]
   新增写入：0 条  ← 绝对幂等
+```
+
+### 3.4 运行监控
+
+每次完整链路或独立采集都会创建唯一 `run_id`，并以规范化来源 URL 生成稳定 `article_id`。`scripts/monitoring/phase1/runtime_monitor.py` 使用本地 SQLite 保存 `skill_runs`、`source_runs` 和 `article_events`，记录文章通过时间、正文解析、相关性、事件日期、去重和飞书写入关卡的状态。
+
+运行结束后生成 `data/monitoring/latest_run.json` 与 `latest_run.md`。只有配置独立的 `MONITORING_FEISHU_WEBHOOK_URL` 时才发送监控卡片；监控读写失败只告警，不得阻断采集和交付主链路。
+
+### 3.5 模型与Prompt监控
+
+`scripts/monitoring/phase2/model_monitor.py` 按 `run_id` 和 `article_id` 记录模型、Prompt版本、Token、延迟、JSON合法性、重试、降级与错误类型。禁止向监控库写入生产文章正文、完整Prompt、API密钥或Webhook。
+
+查看最近一次正式运行：
+
+```bash
+python scripts/monitoring/phase2/model_monitor.py
+```
+
+固定回归评测位于 `scripts/monitoring/phase2/evaluation_cases.json`，通过以下命令手动执行。该命令会调用模型并产生Token消耗，不得在普通单元测试或每次采集时自动运行：
+
+```bash
+python scripts/monitoring/phase2/evaluate_prompts.py
 ```
 
 ---

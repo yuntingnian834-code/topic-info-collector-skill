@@ -1,0 +1,1 @@
+CREATE INDEX `idx_user_events_environment_time` ON `user_events` (`environment`,`event_time`);

@@ -111,7 +111,7 @@
 
 ```bash
 git clone <repo-url>
-cd SKILLL
+cd SKILL1
 pip install -r requirements.txt
 ```
 
@@ -122,6 +122,11 @@ pip install -r requirements.txt
 ```env
 # DeepSeek 大模型 API
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
+DEEPSEEK_MODEL=deepseek-chat
+
+# 可选：按供应商当前价格填写，用于模型成本估算（美元/百万Token）
+MODEL_INPUT_COST_PER_MILLION=
+MODEL_OUTPUT_COST_PER_MILLION=
 
 # 飞书开放平台应用凭证（https://open.feishu.cn/app）
 FEISHU_APP_ID=cli_xxxxxxxxxx
@@ -138,6 +143,20 @@ INFO_TABLE_ID=tblkPWxHeAaShcuA
 # 飞书机器人 Webhook（简报卡片推送）
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx
 
+# Skill运行监控卡片专用 Webhook（可选；不填则只生成本地报告）
+MONITORING_FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx
+
+# 监控存储（可选，以下为默认值）
+MONITORING_DB_PATH=data/monitoring.sqlite3
+MONITORING_REPORT_DIR=data/monitoring
+SKILL_ENVIRONMENT=production
+SKILL_VERSION=1.5
+
+# 第四阶段用户价值看板与周期报告
+SHU_SIGNAL_SITE_URL=https://你的站点地址
+MONITORING_ADMIN_KEY=请替换为高强度随机密钥
+USER_VALUE_REPORT_DIR=data/monitoring/user_value
+
 # 百度翻译 API（可选，英文摘要兜底翻译）
 BAIDU_TRANSLATE_APPID=your_appid
 BAIDU_TRANSLATE_KEY=your_key
@@ -147,37 +166,93 @@ BAIDU_TRANSLATE_KEY=your_key
 
 ```bash
 # 手动触发全量数据采集（含 Write-Guard 去重）
-python scripts/fetch_data.py
+python scripts/runtime/fetch_data.py
 
 # 仅测试前 5 个信息点（快速验证）
-python scripts/fetch_data.py --test5
+python scripts/runtime/fetch_data.py --test5
 
 # 手动触发简报推送（读取今日已落库数据）
-python scripts/reporter.py
+python scripts/runtime/reporter.py
 
-# 启动定时调度（常驻进程，每日 05:00 自动运行）
-python scripts/scheduler.py
+# 推荐：一次运行完整自动链路（采集 → 飞书推送 → 网站更新）
+python scripts/runtime/daily_pipeline.py
+
+# 只用飞书当日数据重建网站，不重复采集和群推送
+python scripts/runtime/daily_pipeline.py --skip-collect --skip-push
+
+# 启动本地定时调度（常驻进程，每日北京时间 05:00 自动运行）
+python scripts/runtime/scheduler.py
+
+# 查看最近一次Skill运行漏斗
+python scripts/monitoring/phase1/runtime_monitor.py
+
+# 查看最近一次正式运行的模型、Prompt、Token与延迟指标
+python scripts/monitoring/phase2/model_monitor.py
+
+# 手动运行固定Prompt回归评测（会调用模型并产生Token消耗）
+python scripts/monitoring/phase2/evaluate_prompts.py
+
+# 查看最近一次运行的P0/P1告警与人工抽检队列
+python scripts/monitoring/phase4/governance.py --json
+
+# 从已发布网站生成用户价值周报（不发送通知）
+python scripts/monitoring/phase4/user_value_monitor.py --site-url https://你的站点地址 --days 7 --notification-mode never
+
+# 强制刷新网站当日快照，并检查日期与记录数
+python scripts/monitoring/phase5/freshness_monitor.py --site-url https://你的站点地址 --refresh
 ```
+
+### Skill运行监控
+
+完整链路和单独采集命令都会生成唯一 `run_id`，并按稳定 `article_id` 记录候选文章经过时间、正文解析、相关性、事件日期、去重和写入关卡的结果。运行数据保存在 `data/monitoring.sqlite3`，最近一次可读报告保存在 `data/monitoring/latest_run.md` 和 `latest_run.json`。
+
+第二阶段在同一数据库记录模型名称、Prompt版本、Token、调用延迟、JSON一次成功、修复、降级与错误类型，不保存生产文章正文或完整Prompt。固定评测集检查相关性判断、事件日期和关键词保留；评测批次单独标记为 `evaluation`，不会覆盖“最近一次正式运行”，默认也不混入7天正式运行对比。模型成本只有在配置两项Token单价后才估算，避免使用过期价格。
+
+第三阶段在网页端以匿名用户ID和会话ID记录访问、筛选、搜索、情报点击、详情、原文、时间线与价值反馈，数据分别保存到Sites D1的 `user_events` 和 `intelligence_feedback`。本地流量标记为 `test`，正式指标只统计 `production`；完整事件字典和指标口径见 `references/monitoring/phase3/README.md`。
+
+第四阶段新增用户价值看板、运行/模型/用户价值阈值告警、Bad Case自动回流、每周保留与拦截双向抽检、飞书周报/月报和数据保留预检。完整闭环与初始阈值见 `references/monitoring/phase4/README.md`。
+
+第五阶段新增页面真实日期、D1每日快照、实时失败回退、每日缓存预热和数据新鲜度告警，避免“采集成功但网页仍显示旧日期”。实现与阈值见 `references/monitoring/phase5/README.md`。
+
+本地报告始终生成；只有配置独立的 `MONITORING_FEISHU_WEBHOOK_URL` 时才发送运行监控卡片，不会复用业务简报群机器人。GitHub Actions 会将每次运行的监控数据库和报告保留为 30 天构件，失败任务也会保存。
+
+### 网站自动发布
+
+GitHub Actions 的 `daily_collect.yml` 每天北京时间 05:00 按以下顺序运行：
+
+1. 完成采集并写入飞书每日简报表；
+2. 回读飞书当日完整记录并发送群简报；
+3. 生成 `showcase/shu-signal-data.js`；
+4. 保存新的公开数据快照并发布到 GitHub Pages。
+
+群推送失败时不会刷新网站，避免群内简报与网站版本不一致。任务重试时会依据网站是否已经存在当日快照决定是否补发群简报；已成功更新过的日期不会重复发送。
 
 ---
 
 ## 📁 项目结构
 
 ```
-SKILLL/
+SKILL1/
 ├── scripts/
-│   ├── fetch_data.py      # 主 ETL 管道（RSS 采集 → LLM 提炼 → 飞书落库）
-│   ├── reporter.py        # 简报引擎（读取 Bitable → AI 看点 → Webhook 推送）
-│   ├── feishu.py          # 飞书 API 基础层（鉴权、读写 Bitable）
-│   ├── scheduler.py       # 定时调度（每日 05:00 触发全管道）
-│   └── update_sources.py  # 数据源维护工具（批量更新 RSS Feed 配置）
-├── prompts/
-│   └── system_prompt.md   # DeepSeek 系统提示词模板
+│   ├── runtime/           # Skill运行：采集、飞书、推送、网页快照与调度
+│   └── monitoring/
+│       ├── phase1/        # 任务、来源、漏斗与交付监控
+│       ├── phase2/        # 模型调用、Prompt版本、质量与成本监控
+│       ├── phase4/        # 告警、抽检、Bad Case与用户价值周报
+│       └── phase5/        # 网页数据新鲜度、缓存预热与发布核对
+├── references/
+│   ├── runtime/           # 飞书表结构等运行参考
+│   └── monitoring/        # phase1运行、phase2模型、phase3行为、phase4治理、phase5新鲜度
+├── tests/skill_monitoring/ # 按phase1/phase2/phase4/phase5归档的监控测试
+├── portfolio/             # PRD与求职/面试材料，不参与Skill运行
+├── showcase/              # 网页作品源码
 ├── requirements.txt
 ├── .env.example
 ├── README.md
 └── SKILL.md
 ```
+
+目录职责：`scripts/runtime/` 只放业务运行代码；`scripts/monitoring/phase1/` 负责链路与漏斗；`phase2/` 负责模型与Prompt；`phase4/` 负责告警、抽检与周期报告；`phase5/` 负责网页数据新鲜度和发布核对；`portfolio/` 和 `showcase/` 分别保存求职材料与网页作品。
 
 ---
 

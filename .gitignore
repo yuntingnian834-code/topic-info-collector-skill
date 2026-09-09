@@ -7,3 +7,8 @@ __pycache__/
 .DS_Store
 venv/
 .venv/
+showcase/.git.backup/
+pages-dist/
+pipeline-result.json
+data/monitoring.sqlite3*
+data/monitoring/

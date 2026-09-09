@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 大宗商品与宏观智能情报网页草稿">
+  <title>SHU SIGNAL｜大宗商品与宏观智能情报</title>
+  <style>
+    :root {
+      --page: #f4f5f1;
+      --surface: #ffffff;
+      --surface-soft: #edf2ef;
+      --ink: #132a3c;
+      --muted: #657580;
+      --line: #dbe3df;
+      --brand: #173b57;
+      --brand-2: #214e6c;
+      --green: #147b61;
+      --green-soft: #e2f1eb;
+      --red: #b74343;
+      --red-soft: #f9e8e8;
+      --orange: #a5631c;
+      --orange-soft: #faeddb;
+      --shadow: 0 22px 60px rgba(19, 42, 60, 0.12);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+      --container: 1200px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: Inter, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    button, a { font: inherit; }
+
+    a { color: inherit; }
+
+    .container {
+      width: min(var(--container), calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid rgba(219, 227, 223, 0.86);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .brand {
+      color: var(--brand);
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: #344754;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .nav-links a:hover { color: var(--green); }
+
+    .nav-action,
+    .button-primary,
+    .button-secondary {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 0 20px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .nav-action,
+    .button-primary {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .button-primary:hover,
+    .nav-action:hover { background: var(--brand-2); }
+
+    .button-secondary {
+      color: var(--brand);
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .hero {
+      min-height: 730px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.04fr) minmax(430px, 0.96fr);
+      align-items: center;
+      gap: 72px;
+      padding-block: 86px;
+    }
+
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      max-width: 650px;
+      margin: 0;
+      font-size: clamp(46px, 5vw, 70px);
+      line-height: 1.12;
+      letter-spacing: -0.055em;
+    }
+
+    .hero-copy {
+      max-width: 590px;
+      margin: 26px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.85;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .terminal {
+      position: relative;
+      overflow: hidden;
+      color: #f5f8fa;
+      background: var(--ink);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .terminal::after {
+      content: "";
+      position: absolute;
+      inset: auto -90px -100px auto;
+      width: 260px;
+      height: 260px;
+      border: 1px solid rgba(100, 209, 170, 0.16);
+      border-radius: 50%;
+      box-shadow: 0 0 0 46px rgba(100, 209, 170, 0.035), 0 0 0 92px rgba(100, 209, 170, 0.025);
+      pointer-events: none;
+    }
+
+    .terminal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .terminal-title {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .terminal-meta {
+      margin: 5px 0 0;
+      color: #9fb0bc;
+      font-size: 13px;
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #78d6b7;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .live::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background: #58cda6;
+      border-radius: 50%;
+      box-shadow: 0 0 0 5px rgba(88, 205, 166, 0.12);
+    }
+
+    .terminal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 25px 0;
+    }
+
+    .terminal-stat {
+      background: #1b3447;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .terminal-stat strong {
+      display: block;
+      font-size: 23px;
+      line-height: 1.25;
+    }
+
+    .terminal-stat span {
+      color: #9fb0bc;
+      font-size: 12px;
+    }
+
+    .terminal-label {
+      margin: 0 0 10px;
+      color: #b7c6cf;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .terminal-signal {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(96px, 160px);
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .terminal-signal span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .terminal-signal span:first-child { font-size: 14px; }
+    .terminal-signal span:last-child { text-align: right; font-size: 13px; }
+    .up { color: #72d5b4; font-weight: 800; }
+    .down { color: #f08a8a; font-weight: 800; }
+    .watch { color: #ecb66f; font-weight: 800; }
+
+    .section {
+      padding-block: 100px;
+    }
+
+    .section-white { background: var(--surface); }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 48px);
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+    }
+
+    .section-description {
+      max-width: 600px;
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .date-note {
+      color: var(--muted);
+      text-align: right;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 22px;
+    }
+
+    .filter {
+      appearance: none;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 17px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: #fff;
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .filter:focus-visible,
+    a:focus-visible,
+    button:focus-visible {
+      outline: 3px solid rgba(20, 123, 97, 0.28);
+      outline-offset: 3px;
+    }
+
+    .ai-summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      color: #fff;
+      background: var(--brand);
+      border-radius: var(--radius-md);
+      padding: 21px 23px;
+      margin-bottom: 20px;
+    }
+
+    .ai-label {
+      display: inline-flex;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .ai-summary p { margin: 0; }
+
+    .intel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.75fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .intel-card,
+    .signal-feed {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+    }
+
+    .intel-card {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 26px;
+    }
+
+    .card-top,
+    .card-bottom,
+    .feed-meta,
+    .list-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: var(--surface-soft);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .badge-alert { color: var(--red); background: var(--red-soft); }
+
+    .intel-card h3 {
+      margin: 0;
+      font-size: 27px;
+      line-height: 1.35;
+    }
+
+    .key-metric {
+      color: var(--brand);
+      background: var(--surface-soft);
+      border-left: 3px solid var(--brand);
+      border-radius: 0 10px 10px 0;
+      padding: 15px 16px;
+      font-weight: 800;
+    }
+
+    .analysis { margin: 0; color: var(--muted); }
+    .source-link { color: var(--brand); text-decoration: none; font-weight: 800; }
+    .table-title-link { color: var(--ink); text-decoration: none; }
+    .table-title-link:hover { color: var(--green); text-decoration: underline; }
+
+    .signal-feed { padding: 22px; }
+    .signal-feed h3 { margin: 0 0 12px; font-size: 20px; }
+
+    .feed-item {
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .feed-item:first-of-type { border-top: 0; padding-top: 3px; }
+    .feed-item p { margin: 6px 0 0; font-weight: 700; }
+    .feed-meta { color: var(--muted); font-size: 13px; }
+
+    .intelligence-list { margin-top: 34px; }
+    .list-heading { margin-bottom: 12px; }
+    .list-heading h3 { margin: 0; font-size: 22px; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      min-width: 850px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); background: var(--surface-soft); font-size: 13px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td:nth-child(3) { min-width: 250px; font-weight: 700; }
+    td:nth-child(4) { min-width: 165px; color: var(--brand); font-weight: 700; }
+
+    [data-category][hidden] { display: none; }
+
+    .funnel-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+      gap: 70px;
+      align-items: start;
+    }
+
+    .funnel-intro h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 48px);
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+    }
+
+    .funnel-intro > div > p { color: var(--muted); }
+
+    .funnel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .funnel-step {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 17px 18px;
+    }
+
+    .step-number {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--brand);
+      border-radius: 12px;
+      font-weight: 800;
+    }
+
+    .funnel-step strong { display: block; }
+    .funnel-step p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .step-result { color: var(--green); font-weight: 800; white-space: nowrap; }
+
+    .feishu-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(380px, 0.7fr);
+      gap: 90px;
+      align-items: center;
+    }
+
+    .feishu-copy h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 48px);
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+    }
+
+    .feishu-copy > p { color: var(--muted); font-size: 17px; }
+
+    .feature-list {
+      display: grid;
+      gap: 13px;
+      margin-top: 28px;
+    }
+
+    .feature-list div {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    .feature-list div::before {
+      content: "✓";
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      color: var(--green);
+      background: var(--green-soft);
+      border-radius: 50%;
+    }
+
+    .feishu-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .feishu-header {
+      color: #fff;
+      background: #3370ff;
+      padding: 20px 22px;
+      font-weight: 800;
+    }
+
+    .feishu-body { padding: 22px; }
+    .feishu-body p { margin-top: 0; }
+
+    .feishu-highlight {
+      padding: 15px;
+      color: var(--brand);
+      background: var(--surface-soft);
+      border-radius: 10px;
+    }
+
+    .feishu-item {
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .feishu-item strong { display: block; }
+    .feishu-item span { color: var(--muted); font-size: 13px; }
+
+    .feishu-button {
+      display: block;
+      margin-top: 18px;
+      padding: 11px 16px;
+      color: #fff;
+      background: #3370ff;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .site-footer {
+      color: #d8e2e8;
+      background: var(--ink);
+      padding: 50px 0;
+    }
+
+    .footer-layout {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 50px;
+    }
+
+    .footer-brand { color: #fff; font-size: 22px; font-weight: 800; }
+    .footer-copy { max-width: 530px; margin: 8px 0 0; color: #9fb0bc; }
+    .footer-meta { color: #9fb0bc; text-align: right; }
+
+    @media (max-width: 980px) {
+      .nav-links { display: none; }
+      .hero,
+      .intel-grid,
+      .funnel-intro,
+      .feishu-layout {
+        grid-template-columns: 1fr;
+      }
+      .hero { gap: 46px; padding-block: 70px; }
+      .terminal { max-width: 650px; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+      .date-note { text-align: left; }
+      .funnel-intro, .feishu-layout { gap: 42px; }
+      .feishu-card { max-width: 600px; }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(100% - 28px, var(--container)); }
+      .nav { min-height: 68px; }
+      .nav-action { display: none; }
+      .brand { font-size: 20px; }
+      .hero { min-height: auto; padding-block: 58px; }
+      .hero h1 { font-size: 45px; }
+      .hero-copy { font-size: 16px; }
+      .terminal { padding: 22px; border-radius: 18px; }
+      .terminal-stats { grid-template-columns: 1fr; }
+      .section { padding-block: 72px; }
+      .section-heading h2,
+      .funnel-intro h2,
+      .feishu-copy h2 { font-size: 36px; }
+      .ai-summary { grid-template-columns: 1fr; }
+      .ai-label { justify-self: start; }
+      .intel-card h3 { font-size: 23px; }
+      .funnel-step { grid-template-columns: 42px minmax(0, 1fr); }
+      .step-result { grid-column: 2; }
+      .footer-layout { flex-direction: column; }
+      .footer-meta { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="#top">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="#principle">工作原理</a>
+        <a href="intelligence.html">全部情报</a>
+        <a href="daily-brief.html">每日简报</a>
+        <a href="monitoring-dashboard.html">数据监控</a>
+        <a href="#about">关于项目</a>
+      </div>
+      <a class="nav-action" href="intelligence.html">查看今日情报</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="container hero">
+      <div>
+        <p class="eyebrow">大宗商品与宏观智能情报</p>
+        <h1>从海量资讯中，<br>只留下影响市场的信号</h1>
+        <p class="hero-copy">自动采集全球大宗商品、航运与宏观政策资讯，通过多重数据漏斗完成时效校验、相关性判断、中文提炼与指纹去重。</p>
+        <div class="hero-actions">
+          <a class="button-primary" href="intelligence.html">查看今日情报</a>
+          <a class="button-secondary" href="#principle">了解提纯流程</a>
+        </div>
+      </div>
+
+      <aside class="terminal" aria-label="实时情报终端示例">
+        <div class="terminal-head">
+          <div>
+            <h2 class="terminal-title">实时情报终端</h2>
+            <p class="terminal-meta" id="terminal-meta">正在读取最新飞书数据</p>
+          </div>
+          <span class="live">运行中</span>
+        </div>
+        <div class="terminal-stats">
+          <div class="terminal-stat"><strong id="terminal-record-count">—</strong><span>今日入库</span></div>
+          <div class="terminal-stat"><strong id="terminal-source-count">—</strong><span>信息来源</span></div>
+          <div class="terminal-stat"><strong id="terminal-timeline-count">—</strong><span>关联时间线</span></div>
+        </div>
+        <p class="terminal-label">最新市场信号</p>
+        <div id="terminal-signal-list"></div>
+      </aside>
+    </section>
+
+    <section class="section section-white" id="intelligence">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Intelligence Feed</p>
+            <h2>今日高纯度情报</h2>
+            <p class="section-description">从全球资讯中提取可验证、有指标、有判断的市场信号。</p>
+          </div>
+          <div class="date-note" id="home-date-note">正在读取日期<br>请稍候</div>
+        </div>
+
+        <div class="filters" aria-label="情报分类筛选">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">全部</button>
+          <button class="filter" type="button" data-filter="market" aria-pressed="false">市场基本面</button>
+          <button class="filter" type="button" data-filter="shipping" aria-pressed="false">航运物流</button>
+          <button class="filter" type="button" data-filter="port" aria-pressed="false">港口与航道</button>
+          <button class="filter" type="button" data-filter="policy" aria-pressed="false">宏观政策</button>
+        </div>
+
+        <div class="ai-summary">
+          <span class="ai-label">AI 核心看点</span>
+          <p id="summary-copy">正在读取最新飞书情报。</p>
+        </div>
+
+        <div class="intel-grid">
+          <article class="intel-card" aria-live="polite">
+            <div class="card-top">
+              <div class="badges">
+                <span class="badge badge-alert" id="feature-alert">飞书快照</span>
+                <span class="badge" id="feature-category">正在读取</span>
+              </div>
+              <span class="date-note" id="feature-time">正在同步</span>
+            </div>
+            <h3 id="feature-title">正在载入当日最新情报</h3>
+            <div class="key-metric" id="feature-metric">数据来自飞书“每日快报”当日视图</div>
+            <p class="analysis" id="feature-analysis">载入完成后将展示真实标题、指标、来源与完整摘要。</p>
+            <div class="card-bottom">
+              <span class="watch" id="feature-signal">正在同步</span>
+              <a class="source-link" id="feature-detail-link" href="intelligence.html">查看详情与时间线 →</a>
+            </div>
+          </article>
+
+          <aside class="signal-feed" aria-labelledby="signal-feed-title">
+            <h3 id="signal-feed-title">即时信号流</h3>
+            <div id="home-signal-feed"></div>
+          </aside>
+        </div>
+
+        <div class="intelligence-list" id="all-intelligence">
+          <div class="list-heading">
+            <h3>全部情报</h3>
+            <a class="source-link" id="home-library-link" href="intelligence.html">进入今日完整情报库 →</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>分类</th><th>情报标题</th><th>关键指标</th><th>判断</th><th>来源</th></tr></thead>
+              <tbody id="home-intel-tbody">
+                <tr><td colspan="6">正在读取最新飞书记录…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="principle">
+      <div class="container funnel-intro">
+        <div>
+          <p class="eyebrow">Purification Pipeline</p>
+          <h2>五重提纯，只让有效信号进入情报库</h2>
+          <p>每条资讯在进入飞书前，都必须通过时效、正文、相关性、事件日期与指纹校验。</p>
+        </div>
+        <div class="funnel">
+          <div class="funnel-step"><span class="step-number">01</span><div><strong>时效窗口</strong><p>过滤历史年份与24小时窗口之外的内容</p></div><span class="step-result">历史内容拦截</span></div>
+          <div class="funnel-step"><span class="step-number">02</span><div><strong>正文完整补全</strong><p>三层策略提取原文，避免仅根据标题判断</p></div><span class="step-result">正文就绪</span></div>
+          <div class="funnel-step"><span class="step-number">03</span><div><strong>AI 相关性网关</strong><p>排除体育、娱乐、个人理财与泛科技噪音</p></div><span class="step-result">噪音内容拦截</span></div>
+          <div class="funnel-step"><span class="step-number">04</span><div><strong>事件日期熔断</strong><p>识别新闻发布日期与真实事件日期的差异</p></div><span class="step-result">异常日期校验</span></div>
+          <div class="funnel-step"><span class="step-number">05</span><div><strong>双重指纹去重</strong><p>URL 主键与摘要指纹共同保障幂等写入</p></div><span class="step-result" id="funnel-dedupe-status">当日重复 0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-white" id="feishu">
+      <div class="container feishu-layout">
+        <div class="feishu-copy">
+          <p class="eyebrow">Daily Delivery</p>
+          <h2>每日清晨，关键情报自动抵达飞书</h2>
+          <p>系统完成采集后生成 AI 核心看点，并按市场基本面、航运、港口和宏观政策分组推送。</p>
+          <div class="feature-list">
+            <div>每日05:00自动运行</div>
+            <div>每组最多展示3条重点情报</div>
+            <div>一键进入飞书多维完整面板</div>
+          </div>
+        </div>
+
+        <aside class="feishu-card" aria-label="飞书每日快报示例">
+          <div class="feishu-header" id="home-feishu-header">大宗商品与宏观每日快报 · 正在同步</div>
+          <div class="feishu-body">
+            <p><strong id="home-feishu-total">正在读取当日洞察</strong></p>
+            <div class="feishu-highlight"><strong>AI核心看点</strong><br><span id="home-feishu-summary">正在读取最新摘要</span></div>
+            <div id="home-feishu-groups"></div>
+            <a class="feishu-button" href="daily-brief.html">打开今日专属简报</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="about">
+    <div class="container footer-layout">
+      <div>
+        <div class="footer-brand">SHU SIGNAL</div>
+        <p class="footer-copy">树信 · 大宗商品与宏观智能情报。从全球资讯中，提纯真正影响市场的信号。</p>
+      </div>
+      <div class="footer-meta">上海大学项目展示<br>Commodity Intelligence</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script>
+    const liveSnapshot = window.SHU_SIGNAL_DATA || {};
+    const liveRecords = liveSnapshot.records || [];
+    const snapshotDate = liveSnapshot.sampleDate || "";
+    const snapshotDateObject = new Date(`${snapshotDate}T12:00:00+08:00`);
+    const validSnapshotDate = !Number.isNaN(snapshotDateObject.getTime());
+    const snapshotDateZh = validSnapshotDate
+      ? `${snapshotDateObject.getFullYear()}年${snapshotDateObject.getMonth() + 1}月${snapshotDateObject.getDate()}日`
+      : "日期暂不可用";
+    const snapshotDateShort = validSnapshotDate
+      ? `${snapshotDateObject.getMonth() + 1}月${snapshotDateObject.getDate()}日`
+      : "最近一次";
+    const freshness = liveSnapshot.meta?.freshness || "unavailable";
+    const freshnessLabel = freshness === "stale" ? "最近成功快照" : freshness === "fresh" ? "飞书当日快照" : "实时数据暂不可用";
+
+    const emptyFeature = {
+      detailId: "",
+      summary: liveSnapshot.dailySummary || "正在读取最新飞书情报。",
+      alert: "飞书快照",
+      category: "正在读取",
+      time: snapshotDate || "正在同步",
+      title: "正在载入当日最新情报",
+      metric: "数据来自飞书当日视图",
+      analysis: "载入完成后将展示真实标题、指标、来源与完整摘要。",
+      signal: "正在同步",
+      signalClass: "watch"
+    };
+    const data = {
+      all: {...emptyFeature},
+      market: {...emptyFeature},
+      shipping: {...emptyFeature},
+      port: {...emptyFeature},
+      policy: {...emptyFeature}
+    };
+
+    function toFeature(record, summary) {
+      return {
+        detailId: record.id,
+        categoryKey: record.categoryKey,
+        summary: summary || record.evidence,
+        alert: "飞书真实记录",
+        category: record.category,
+        time: `${record.collectedAt.slice(11)} · ${record.source}`,
+        title: record.title,
+        metric: record.metric,
+        analysis: record.evidence,
+        signal: `${record.judgment} · 信号强度${record.strength}`,
+        signalClass: record.judgmentClass === "positive" ? "up" : record.judgmentClass === "negative" ? "down" : "watch"
+      };
+    }
+
+    if (liveRecords.length) {
+      data.all = toFeature(liveRecords[0], liveSnapshot.dailySummary);
+      const categoryLabels = {
+        market: "市场基本面",
+        shipping: "航运物流",
+        port: "港口与航道",
+        policy: "宏观政策"
+      };
+      ["market", "shipping", "port", "policy"].forEach((key) => {
+        const match = liveRecords.find((record) => record.categoryKey === key);
+        if (match) {
+          data[key] = toFeature(match, match.evidence);
+        } else {
+          const label = categoryLabels[key];
+          data[key] = {
+            ...emptyFeature,
+            summary: `${snapshotDateZh}的飞书视图中没有“${label}”分类记录。`,
+            alert: "当日无记录",
+            category: label,
+            title: `${snapshotDateShort}暂无${label}情报`,
+            metric: "当日入库 0 条",
+            analysis: "分类结构继续保留；可切换至其他分类查看当天已采集内容。",
+            signal: "等待下一次采集"
+          };
+        }
+      });
+
+      const sourceCount = new Set(liveRecords.map((record) => record.source)).size;
+      const timelineCount = Object.keys(liveSnapshot.timeline || {}).length;
+      const generatedTime = liveSnapshot.meta?.generatedAt?.slice(11, 16) || "—";
+      document.getElementById("terminal-record-count").textContent = liveRecords.length;
+      document.getElementById("terminal-source-count").textContent = sourceCount;
+      document.getElementById("terminal-timeline-count").textContent = timelineCount;
+      document.getElementById("terminal-meta").textContent = `${snapshotDateShort} · ${freshnessLabel} · ${generatedTime}生成`;
+      document.getElementById("terminal-signal-list").innerHTML = liveRecords.slice(0, 3).map((record) => `
+        <div class="terminal-signal">
+          <span>${record.title}</span>
+          <span class="watch">${record.metric}</span>
+        </div>`).join("");
+
+      document.getElementById("home-signal-feed").innerHTML = liveRecords.slice(1, 5).map((record) => `
+        <article class="feed-item" data-category="${record.categoryKey}">
+          <div class="feed-meta"><span>${record.collectedAt.slice(11)} · ${record.category}</span><span class="watch">${record.judgment}</span></div>
+          <p>${record.title}</p>
+        </article>`).join("");
+
+      const tbody = document.getElementById("home-intel-tbody");
+      tbody.innerHTML = liveRecords.slice(0, 4).map((record, index) => `
+        <tr data-category="${record.categoryKey}">
+          <td>${record.collectedAt.slice(11)}</td>
+          <td>${record.category}</td>
+          <td><a class="table-title-link" data-intelligence-id="${record.id}" data-category-key="${record.categoryKey}" data-position="${index + 1}" href="intelligence-detail.html?id=${encodeURIComponent(record.id)}">${record.title}</a></td>
+          <td>${record.metric}</td>
+          <td class="watch">${record.judgment}</td>
+          <td>${record.source}</td>
+        </tr>`).join("");
+
+      const date = snapshotDateObject;
+      document.getElementById("home-date-note").innerHTML = `${snapshotDateZh}<br>${freshnessLabel} · ${liveRecords.length}条`;
+      document.getElementById("home-library-link").textContent = `进入今日完整情报库（${liveRecords.length}条）→`;
+      document.getElementById("home-feishu-header").textContent = `大宗商品与宏观每日快报 · ${date.getMonth() + 1}月${date.getDate()}日`;
+      document.getElementById("home-feishu-total").textContent = `今日共采集${liveRecords.length}条高纯度洞察`;
+      document.getElementById("home-feishu-summary").textContent = liveSnapshot.dailySummary;
+      document.getElementById("funnel-dedupe-status").textContent = `${snapshotDateShort}重复 0`;
+
+      const categoryOrder = ["市场基本面", "航运物流", "港口与航道", "宏观政策"];
+      document.getElementById("home-feishu-groups").innerHTML = categoryOrder.map((category) => {
+        const records = liveRecords.filter((record) => record.category === category);
+        if (!records.length) return "";
+        return `<div class="feishu-item"><strong>${category}（${records.length}条）</strong><span>${records[0].title}</span></div>`;
+      }).join("");
+    } else {
+      document.getElementById("terminal-record-count").textContent = "0";
+      document.getElementById("terminal-source-count").textContent = "0";
+      document.getElementById("terminal-timeline-count").textContent = "0";
+      document.getElementById("terminal-meta").textContent = `${snapshotDateShort} · ${freshnessLabel}`;
+      document.getElementById("terminal-signal-list").innerHTML = "<div class=\"terminal-signal\"><span>当前没有可展示的新情报</span><span class=\"watch\">等待下一次采集</span></div>";
+      document.getElementById("home-date-note").innerHTML = `${snapshotDateZh}<br>${freshnessLabel} · 0条`;
+      document.getElementById("summary-copy").textContent = liveSnapshot.dailySummary || "实时数据暂时不可用，请稍后刷新。";
+      document.getElementById("home-intel-tbody").innerHTML = "<tr><td colspan=\"6\">当前日期暂无新的高纯度情报。</td></tr>";
+      document.getElementById("home-library-link").textContent = "进入今日完整情报库（0条）→";
+      document.getElementById("home-feishu-header").textContent = `大宗商品与宏观每日快报 · ${snapshotDateShort}`;
+      document.getElementById("home-feishu-total").textContent = "今日暂未采集到新的高纯度洞察";
+      document.getElementById("home-feishu-summary").textContent = liveSnapshot.dailySummary || "等待下一次数据同步。";
+      document.getElementById("funnel-dedupe-status").textContent = `${snapshotDateShort}重复 0`;
+    }
+
+    const filters = document.querySelectorAll("[data-filter]");
+    const rows = document.querySelectorAll("[data-category]");
+    let activeCategory = "all";
+
+    function setText(id, value) {
+      const target = document.getElementById(id);
+      if (target) target.textContent = value;
+    }
+
+    function applyFilter(category) {
+      const item = data[category];
+      setText("summary-copy", item.summary);
+      setText("feature-alert", item.alert);
+      setText("feature-category", item.category);
+      setText("feature-time", item.time);
+      setText("feature-title", item.title);
+      setText("feature-metric", item.metric);
+      setText("feature-analysis", item.analysis);
+      setText("feature-signal", item.signal);
+      document.getElementById("feature-signal").className = item.signalClass;
+      const detailLink = document.getElementById("feature-detail-link");
+      detailLink.href = item.detailId ? `intelligence-detail.html?id=${item.detailId}` : "intelligence.html";
+      detailLink.textContent = item.detailId ? "查看详情与时间线 →" : "查看今日全部情报 →";
+      detailLink.dataset.intelligenceId = item.detailId || "";
+      detailLink.dataset.categoryKey = item.categoryKey || category;
+      detailLink.dataset.position = item.detailId
+        ? String(liveRecords.findIndex((record) => record.id === item.detailId) + 1)
+        : "";
+
+      rows.forEach((row) => {
+        row.hidden = category !== "all" && row.dataset.category !== category;
+      });
+    }
+
+    filters.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextCategory = button.dataset.filter;
+        filters.forEach((candidate) => {
+          candidate.setAttribute("aria-pressed", String(candidate === button));
+        });
+        applyFilter(nextCategory);
+        if (nextCategory !== activeCategory) {
+          activeCategory = nextCategory;
+          window.ShuAnalytics?.track("category_filter_applied", {
+            category: nextCategory,
+            properties: {
+              surface: "home",
+              result_count: nextCategory === "all"
+                ? liveRecords.length
+                : liveRecords.filter((record) => record.categoryKey === nextCategory).length,
+            },
+          });
+        }
+      });
+    });
+
+    document.getElementById("feature-detail-link").addEventListener("click", (event) => {
+      const link = event.currentTarget;
+      if (!link.dataset.intelligenceId) return;
+      window.ShuAnalytics?.track("intelligence_clicked", {
+        intelligenceId: link.dataset.intelligenceId,
+        category: link.dataset.categoryKey,
+        position: Number(link.dataset.position),
+        properties: { surface: "home_feature" },
+      }, { transport: "beacon" });
+    });
+
+    document.getElementById("home-intel-tbody").addEventListener("click", (event) => {
+      const link = event.target.closest(".table-title-link");
+      if (!link) return;
+      window.ShuAnalytics?.track("intelligence_clicked", {
+        intelligenceId: link.dataset.intelligenceId,
+        category: link.dataset.categoryKey,
+        position: Number(link.dataset.position),
+        properties: { surface: "home_table" },
+      }, { transport: "beacon" });
+    });
+    applyFilter("all");
+  </script>
+</body>
+</html>

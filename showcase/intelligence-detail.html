@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SHU SIGNAL 单条情报详情页草稿">
+  <title>情报详情｜SHU SIGNAL</title>
+  <link rel="stylesheet" href="shu-signal-pages.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav" aria-label="主导航">
+      <a class="brand" href="shu-signal-draft.html">SHU SIGNAL</a>
+      <div class="nav-links">
+        <a href="shu-signal-draft.html">首页</a>
+        <a href="intelligence.html" aria-current="page">全部情报</a>
+        <a href="daily-brief.html">每日简报</a>
+        <a id="nav-timeline" href="event-timeline.html?topic=copper-tightness">事件时间线</a>
+        <a href="monitoring-dashboard.html">数据监控</a>
+      </div>
+      <a class="nav-cta" href="intelligence.html">返回列表</a>
+    </nav>
+  </header>
+
+  <main id="detail-root">
+    <div class="container crumbs"><a href="shu-signal-draft.html">首页</a><span><a href="intelligence.html">全部情报</a></span><span id="crumb-title">情报详情</span></div>
+
+    <section class="detail-hero">
+      <div class="container">
+        <div class="detail-meta">
+          <span class="badge" id="category"></span>
+          <span class="badge" id="subtopic"></span>
+          <span class="badge green" id="strength"></span>
+        </div>
+        <h1 id="title"></h1>
+        <p class="detail-deck" id="deck"></p>
+        <div class="source-line">
+          <span>采集时间：<strong id="collected-at"></strong></span>
+          <span>事件日期：<strong id="event-date"></strong></span>
+          <span>来源：<strong id="source"></strong></span>
+          <a id="source-link" href="#" target="_blank" rel="noopener">打开原始来源 ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container detail-layout">
+      <article class="content-stack">
+        <section class="panel key-insight">
+          <h2>AI 核心结论</h2>
+          <p id="core-insight"></p>
+        </section>
+
+        <section class="panel">
+          <h2>关键指标</h2>
+          <div class="metric-grid" id="metric-grid"></div>
+        </section>
+
+        <section class="panel">
+          <h2>事件摘要</h2>
+          <p id="full-summary"></p>
+          <h3>市场传导路径</h3>
+          <div class="logic-flow" id="logic-flow"></div>
+        </section>
+
+        <section class="panel">
+          <h2>证据与判断依据</h2>
+          <p class="quote" id="evidence"></p>
+          <h3>如何阅读这个判断</h3>
+          <p>方向表示该事件对相关商品或成本的主要影响；强度综合考虑指标幅度、来源可靠性和是否存在交叉验证。该判断用于研究筛选，不构成交易建议。</p>
+        </section>
+
+        <section class="panel" id="timeline-preview">
+          <h2>事件发展时间线</h2>
+          <p id="timeline-copy">系统将同一研究主题下、语义相近且具有连续指标的历史记录合并为事件链。</p>
+          <a class="button primary" id="timeline-link" href="event-timeline.html?topic=copper-tightness">查看完整时间线 →</a>
+        </section>
+      </article>
+
+      <aside class="side-stack">
+        <section class="side-panel">
+          <h3>结构化字段</h3>
+          <div class="kv"><span>一级分类</span><strong id="side-category"></strong></div>
+          <div class="kv"><span>二级信息点</span><strong id="side-subtopic"></strong></div>
+          <div class="kv"><span>典型指标</span><strong id="side-metric"></strong></div>
+          <div class="kv"><span>市场判断</span><strong id="side-judgment"></strong></div>
+        </section>
+        <section class="side-panel">
+          <h3>研究核心</h3>
+          <p id="research-core" style="margin:0;color:var(--muted);font-size:13px"></p>
+        </section>
+        <section class="side-panel feedback-panel" aria-labelledby="feedback-title">
+          <h3 id="feedback-title">这条情报对你有用吗？</h3>
+          <p class="feedback-hint">你的反馈会用于改进筛选与摘要质量。</p>
+          <div class="feedback-options">
+            <button type="button" class="feedback-button" data-feedback="useful" aria-pressed="false">有用</button>
+            <button type="button" class="feedback-button" data-feedback="not_useful" aria-pressed="false">暂时没用</button>
+          </div>
+          <div class="feedback-reasons" id="feedback-reasons" hidden>
+            <span>主要原因是：</span>
+            <div class="feedback-reason-list">
+              <button type="button" data-reason="irrelevant">与主题不相关</button>
+              <button type="button" data-reason="outdated">信息不够及时</button>
+              <button type="button" data-reason="missing_data">缺少关键数据</button>
+              <button type="button" data-reason="unclear">结论不够清楚</button>
+              <button type="button" data-reason="other">其他</button>
+            </div>
+          </div>
+          <p class="feedback-status" id="feedback-status" role="status" aria-live="polite"></p>
+        </section>
+        <section class="side-panel">
+          <a class="button primary full" id="side-source" href="#" target="_blank" rel="noopener">查看原文</a>
+          <a class="button full" href="intelligence.html">返回今日全部情报</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <div><strong>SHU SIGNAL</strong><p>每条记录保留来源链接、研究课题与结构化指标，使结论可回溯、可解释。</p></div>
+      <div>情报详情页草稿<br>Prototype · 2026</div>
+    </div>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="shu-signal-data.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const requestedId = params.get("id") || "lme-copper-20260806";
+    const records = window.SHU_SIGNAL_DATA.records;
+    const record = records.find((item) => item.id === requestedId) || records[0];
+    window.ShuAnalytics?.setContext({
+      intelligenceId: record.id,
+      topicId: record.eventGroup,
+      category: record.categoryKey,
+    });
+    window.ShuAnalytics?.track("detail_view", {
+      intelligenceId: record.id,
+      topicId: record.eventGroup,
+      category: record.categoryKey,
+    });
+
+    function text(id, value) { document.getElementById(id).textContent = value; }
+    text("crumb-title", record.title);
+    text("category", record.category);
+    text("subtopic", record.subtopic);
+    text("strength", `信号强度 · ${record.strength}`);
+    text("title", record.title);
+    text("deck", record.summary.replace(/【[^】]+】/g, ""));
+    text("collected-at", record.collectedAt);
+    text("event-date", record.eventDate);
+    text("source", record.source);
+    text("core-insight", `${record.evidence} 综合判断为“${record.judgment}”，信号强度${record.strength}。`);
+    text("full-summary", record.summary);
+    text("evidence", record.evidence);
+    text("side-category", record.category);
+    text("side-subtopic", record.subtopic);
+    text("side-metric", record.metric);
+    text("side-judgment", `${record.judgment} · ${record.strength}`);
+    text("research-core", record.researchCore);
+    document.title = `${record.title}｜SHU SIGNAL`;
+
+    document.getElementById("metric-grid").innerHTML = record.metrics.map(([value, label]) => `<div class="metric-card"><strong>${value}</strong><span>${label}</span></div>`).join("");
+    document.getElementById("logic-flow").innerHTML = record.transmission.map((item) => `<div class="logic-node">${item}</div>`).join("");
+
+    ["source-link", "side-source"].forEach((id) => document.getElementById(id).href = record.sourceUrl);
+    const timeline = window.SHU_SIGNAL_DATA.timeline[record.eventGroup];
+    const timelineUrl = `event-timeline.html?topic=${encodeURIComponent(record.eventGroup)}`;
+    ["timeline-link", "nav-timeline"].forEach((id) => document.getElementById(id).href = timelineUrl);
+    if (timeline) {
+      text("timeline-copy", `${timeline.events.length}条历史记录已被归并为“${timeline.title}”。最新趋势：${timeline.trend}，关联置信度${timeline.confidence}%。`);
+    } else {
+      document.getElementById("timeline-preview").hidden = true;
+    }
+
+    ["source-link", "side-source"].forEach((id) => {
+      document.getElementById(id).addEventListener("click", () => {
+        window.ShuAnalytics?.track("source_clicked", {
+          intelligenceId: record.id,
+          topicId: record.eventGroup,
+          category: record.categoryKey,
+          properties: { source: record.source, placement: id },
+        }, { transport: "beacon" });
+      });
+    });
+    ["timeline-link", "nav-timeline"].forEach((id) => {
+      document.getElementById(id).addEventListener("click", () => {
+        window.ShuAnalytics?.track("timeline_clicked", {
+          intelligenceId: record.id,
+          topicId: record.eventGroup,
+          category: record.categoryKey,
+          properties: { placement: id },
+        }, { transport: "beacon" });
+      });
+    });
+
+    const feedbackButtons = [...document.querySelectorAll("[data-feedback]")];
+    const reasonButtons = [...document.querySelectorAll("[data-reason]")];
+    const feedbackReasons = document.getElementById("feedback-reasons");
+    const feedbackStatus = document.getElementById("feedback-status");
+    const storageId = (storage, key) => {
+      try {
+        let value = storage.getItem(key);
+        if (!value) {
+          value = crypto.randomUUID();
+          storage.setItem(key, value);
+        }
+        return value;
+      } catch {
+        return crypto.randomUUID();
+      }
+    };
+    const anonymousUserId = window.ShuAnalytics?.identity.anonymousUserId
+      || storageId(localStorage, "shu_signal_anonymous_user_id");
+    const sessionId = window.ShuAnalytics?.identity.sessionId
+      || storageId(sessionStorage, "shu_signal_session_id");
+    const channel = window.ShuAnalytics?.context.channel
+      || (params.get("utm_source") || "direct").slice(0, 40);
+
+    function selectFeedback(value, reason = null) {
+      feedbackButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.feedback === value));
+      });
+      reasonButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.reason === reason));
+      });
+      feedbackReasons.hidden = value !== "not_useful";
+    }
+
+    function setFeedbackLoading(loading) {
+      [...feedbackButtons, ...reasonButtons].forEach((button) => {
+        button.disabled = loading;
+      });
+    }
+
+    async function submitFeedback(feedbackValue, reason = null) {
+      setFeedbackLoading(true);
+      feedbackStatus.textContent = "正在提交…";
+      try {
+        const response = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            intelligenceId: record.id,
+            anonymousUserId,
+            sessionId,
+            feedbackValue,
+            reason,
+            channel,
+            pagePath: location.pathname,
+          }),
+        });
+        if (!response.ok) throw new Error("feedback_failed");
+        selectFeedback(feedbackValue, reason);
+        feedbackStatus.textContent = "已记录，谢谢你的反馈。";
+        window.ShuAnalytics?.track("feedback_submitted", {
+          intelligenceId: record.id,
+          topicId: record.eventGroup,
+          category: record.categoryKey,
+          properties: { feedback_value: feedbackValue, reason },
+        });
+      } catch {
+        feedbackStatus.textContent = "暂时未提交成功，请稍后重试。";
+      } finally {
+        setFeedbackLoading(false);
+      }
+    }
+
+    feedbackButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const value = button.dataset.feedback;
+        selectFeedback(value);
+        feedbackStatus.textContent = value === "not_useful" ? "请选择一个主要原因。" : "";
+        if (value === "useful") submitFeedback(value);
+      });
+    });
+    reasonButtons.forEach((button) => {
+      button.addEventListener("click", () => submitFeedback("not_useful", button.dataset.reason));
+    });
+
+    fetch(`/api/feedback?intelligenceId=${encodeURIComponent(record.id)}&anonymousUserId=${encodeURIComponent(anonymousUserId)}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (payload?.feedback) {
+          selectFeedback(payload.feedback.feedback_value, payload.feedback.reason);
+          feedbackStatus.textContent = "你已反馈，可随时修改。";
+        }
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>

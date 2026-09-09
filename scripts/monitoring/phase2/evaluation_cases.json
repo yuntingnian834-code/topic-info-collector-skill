@@ -1,0 +1,56 @@
+[
+  {
+    "case_id": "relevant_copper_inventory",
+    "level2": "LME铜供需与库存",
+    "research_core": "关注库存、现货升贴水与价格方向",
+    "content": "2026年9月5日，伦敦金属交易所公布铜库存降至142300吨，较前一日减少2800吨；三个月期铜上涨1.1%。库存下降与现货需求改善共同支撑铜价。",
+    "expected_relevant": true,
+    "expected_event_date": "2026-09-05",
+    "expected_keyword": "铜"
+  },
+  {
+    "case_id": "relevant_shipping_freight",
+    "level2": "国际干散货运价",
+    "research_core": "跟踪运价指数、船型与供应链扰动",
+    "content": "2026年9月4日，波罗的海干散货指数上涨3.2%至1986点，海岬型船运价受铁矿石运输需求推动连续第三日上行。",
+    "expected_relevant": true,
+    "expected_event_date": "2026-09-04",
+    "expected_keyword": "运价"
+  },
+  {
+    "case_id": "relevant_cbam_policy",
+    "level2": "欧盟CBAM合规规制",
+    "research_core": "关注实施阶段、核算规则与企业成本传导",
+    "content": "欧盟委员会于2026年9月3日发布CBAM实施细则更新，明确钢铁和铝进口商下一申报期的碳排放核算要求，预计提高高碳产品的合规成本。",
+    "expected_relevant": true,
+    "expected_event_date": "2026-09-03",
+    "expected_keyword": "CBAM"
+  },
+  {
+    "case_id": "irrelevant_football",
+    "level2": "全球宏观风险",
+    "research_core": "关注可能影响大宗商品的全球事件",
+    "content": "某足球俱乐部公布新赛季球衣，并宣布与赞助商续约三年。球迷活动将在本周末举行。",
+    "expected_relevant": false,
+    "expected_event_date": null,
+    "expected_keyword": null
+  },
+  {
+    "case_id": "irrelevant_smartphone",
+    "level2": "有色金属终端需求",
+    "research_core": "关注终端产业对有色金属需求的量化影响",
+    "content": "某消费电子品牌发布新款手机，重点介绍相机算法、机身颜色与操作系统功能，但未披露原材料用量或供应链变化。",
+    "expected_relevant": false,
+    "expected_event_date": null,
+    "expected_keyword": null
+  },
+  {
+    "case_id": "irrelevant_tourism",
+    "level2": "宏观消费趋势",
+    "research_core": "关注宏观消费对商品需求的传导",
+    "content": "旅游平台发布秋季小众目的地榜单，推荐古镇、美食和摄影路线，并提供酒店预订优惠。",
+    "expected_relevant": false,
+    "expected_event_date": null,
+    "expected_keyword": null
+  }
+]
